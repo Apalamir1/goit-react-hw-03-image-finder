@@ -22,39 +22,25 @@ export default class App extends Component {
       this.getData();
     }
   }
-  getData = async () => {
+  getData = () => {
     const { query, page } = this.state;
-
     if (query === '') {
       return Report.failure('Plz, enter something...');
     }
-
     this.setState({ loading: true });
 
-    try {
-      const response = await getImages(query, page);
-      const hits = response.data.hits;
-
-      this.setState(prevState => {
-        if (page === 1) {
-          return {
-            images: hits,
+    setTimeout(() => {
+      getImages(query, page)
+        .then(response => {
+          console.log(response);
+          this.setState(prevState => ({
+            images: [...prevState.images, ...response.data.hits],
             page: prevState.page + 1,
-            loading: false,
-          };
-        } else {
-          return {
-            images: [...prevState.images, ...hits],
-            page: prevState.page + 1,
-            loading: false,
-          };
-        }
-      });
-    } catch (error) {
-      Report.failure('Notiflix Failure', `${error}`, 'Okay');
-    } finally {
-      this.setState({ loading: false });
-    }
+          }));
+        })
+        .catch(error => Report.failure('Notiflix Failure', `${error}`, 'Okay'))
+        .finally(this.setState({ loading: false }));
+    }, 500);
   };
 
   onSubmitBtn = dataQuery => {
