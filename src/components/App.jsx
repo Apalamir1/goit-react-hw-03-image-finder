@@ -44,6 +44,11 @@ export default class App extends Component {
             images: hits,
             loading: false,
           };
+        } else {
+          return {
+            images: [...prevState.images, ...response.data.hits],
+            loading: false,
+          };
         }
       });
     } catch (error) {
@@ -57,25 +62,7 @@ export default class App extends Component {
     this.setState({ query: dataQuery, page: 1, images: [] });
   };
   handleLoadMore = () => {
-    const { page, query } = this.state;
-    const nextPage = page + 1;
-
-    this.setState({ loading: true });
-
-    getImages(query, nextPage)
-      .then(response => {
-        const hits = response.data.hits;
-
-        this.setState(prevState => ({
-          images: [...prevState.images, ...hits],
-          page: nextPage,
-          loading: false,
-        }));
-      })
-      .catch(error => {
-        Report.failure('Notiflix Failure', `${error}`, 'Okay');
-        this.setState({ loading: false });
-      });
+    this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
   toggleModal = () => {
