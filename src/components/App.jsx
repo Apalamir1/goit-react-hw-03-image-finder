@@ -18,7 +18,10 @@ export default class App extends Component {
     loading: false,
   };
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.query !== prevState.query) {
+    if (
+      prevState.page !== this.state.page ||
+      prevState.query !== this.state.query
+    ) {
       this.getData();
     }
   }
@@ -39,13 +42,6 @@ export default class App extends Component {
         if (page === 1) {
           return {
             images: hits,
-            page: prevState.page + 1,
-            loading: false,
-          };
-        } else {
-          return {
-            images: [...prevState.images, ...hits],
-            page: prevState.page + 1,
             loading: false,
           };
         }
@@ -59,6 +55,27 @@ export default class App extends Component {
 
   onSubmitBtn = dataQuery => {
     this.setState({ query: dataQuery, page: 1, images: [] });
+  };
+  handleLoadMore = () => {
+    const { page, query } = this.state;
+    const nextPage = page + 1;
+
+    this.setState({ loading: true });
+
+    getImages(query, nextPage)
+      .then(response => {
+        const hits = response.data.hits;
+
+        this.setState(prevState => ({
+          images: [...prevState.images, ...hits],
+          page: nextPage,
+          loading: false,
+        }));
+      })
+      .catch(error => {
+        Report.failure('Notiflix Failure', `${error}`, 'Okay');
+        this.setState({ loading: false });
+      });
   };
 
   toggleModal = () => {
@@ -77,7 +94,7 @@ export default class App extends Component {
         {images.length !== 0 && (
           <ImageGallery images={images} onClick={this.onImageClick} />
         )}
-        {images.length < 12 ? null : <Button onClick={this.getData} />}
+        {images.length < 12 ? null : <Button onClick={this.handleLoadMore} />}
 
         {loading && <Loader />}
         {isModalOpen && (
