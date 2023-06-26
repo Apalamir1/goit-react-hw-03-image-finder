@@ -22,7 +22,7 @@ export default class App extends Component {
       prevState.page !== this.state.page ||
       prevState.query !== this.state.query
     ) {
-      this.getData();
+      this.getData(this.state.query, this.state.page);
     }
   }
   getData = async () => {
